@@ -27,22 +27,6 @@ impl WakerQueue {
     }
 
     #[inline(always)]
-    pub fn len (&self) -> usize {
-        self.lock();
-        let len = self.get_inner().len();
-        self.unlock();
-        len
-    }
-
-    #[inline(always)]
-    pub fn capacity (&self) -> usize {
-        self.lock();
-        let cap = self.get_inner().capacity();
-        self.unlock();
-        cap
-    }
-
-    #[inline(always)]
     pub fn register (&self, waker: &Waker) {        
         self.lock();
         unsafe { self.get_inner_mut().push_back(waker.clone()) };
@@ -62,11 +46,6 @@ impl WakerQueue {
     }
 
     /* UTILS */
-    #[inline(always)]
-    fn get_inner (&self) -> &VecDeque<Waker> {
-        unsafe { &*self.inner.get() }
-    }
-
     #[inline(always)]
     unsafe fn get_inner_mut (&self) -> &mut VecDeque<Waker> {
         &mut *self.inner.get()
