@@ -7,16 +7,16 @@ fn sync () {
     let m2 = mutex.clone();
 
     let join = std::thread::spawn(move || {
-        let mut mutex = m2.lock_block();
+        let mut mutex = m2.lock();
         *mutex += 1;
     });
 
-    let mut lock = mutex.lock_block();
+    let mut lock = mutex.lock();
     *lock += 1;
     drop(lock);
 
     join.join().unwrap();
-    let lock = mutex.lock_block();
+    let lock = mutex.lock();
     let inner = *lock;
     assert_eq!(inner, 3);
 }
@@ -47,7 +47,7 @@ async fn mixed () {
     let m2 = mutex.clone();
 
     let join = std::thread::spawn(move || {
-        let mut mutex = m2.lock_block();
+        let mut mutex = m2.lock();
         *mutex += 1;
     });
 
@@ -56,7 +56,7 @@ async fn mixed () {
     drop(lock);
 
     join.join().unwrap();
-    let lock = mutex.lock_block();
+    let lock = mutex.lock();
     let inner = *lock;
     assert_eq!(inner, 3);
 }
