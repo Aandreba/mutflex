@@ -1,25 +1,22 @@
+extern crate alloc;
 use core::{cell::{UnsafeCell}, ops::{Deref, DerefMut}, task::Poll};
+use alloc::{sync::Arc, rc::Rc};
 use futures::{Future, FutureExt};
 use crate::{MovableMutex, MovableMutexFuture};
 
 /// A mutally exclusive lock.
+#[derive(Debug)]
 pub struct Mutex<T: ?Sized> {
     inner: MovableMutex,
     data: UnsafeCell<T>,
 }
 
 impl<T> Mutex<T> {
-    /// Creates a new mutex with an initial capacity for 8 concurrent wakers
+    /// Creates a new mutex
     #[inline(always)]
-    pub fn new (data: T) -> Self {
-        Self::with_capacity(data, 8)
-    }
-
-    /// Creates a new mutex with the given capacity of concurrent wakers
-    #[inline(always)]
-    pub fn with_capacity (data: T, cap: usize) -> Self {
+    pub const fn new (data: T) -> Self {
         Self {
-            inner: MovableMutex::with_capacity(cap),
+            inner: MovableMutex::new(),
             data: UnsafeCell::new(data)
         }
     }
@@ -28,6 +25,18 @@ impl<T> Mutex<T> {
     #[inline(always)]
     pub fn into_inner (self) -> T {
         self.data.into_inner()
+    }
+
+    #[inline(always)]
+    pub fn try_into_inner_rc (self: Rc<Self>) -> Result<T, Rc<Self>> {
+        let inner = Rc::try_unwrap(self)?;
+        Ok(inner.into_inner())
+    }
+
+    #[inline(always)]
+    pub fn try_into_inner_arc (self: Arc<Self>) -> Result<T, Arc<Self>> {
+        let inner = Arc::try_unwrap(self)?;
+        Ok(inner.into_inner())
     }
 }
 

@@ -21,26 +21,20 @@ cfg_if::cfg_if! {
 }
 
 impl MovableMutex {
-    /// Creates a new mutex with a default capacity for 8 concurrent wakers
-    #[inline(always)]
-    pub fn new () -> Self {
-        Self::with_capacity(8)
-    }
-
-    /// Creates a new mutex with the given capacity of concurrent wakers
+    /// Creates a new mutex
     #[cfg(feature = "futures")]
     #[inline(always)]
-    pub fn with_capacity (cap: usize) -> Self {
+    pub const fn new () -> Self {
         Self {
             inner: Flag::new(FALSE),
-            queue: WakerQueue::with_capacity(cap)
+            queue: WakerQueue::new()
         }
     }
 
-    /// Creates a new mutex with the given capacity of concurrent wakers
+    /// Creates a new mutex
     #[cfg(not(feature = "futures"))]
     #[inline(always)]
-    pub fn with_capacity (cap: usize) -> Self {
+    pub const fn new () -> Self {
         Self {
             inner: Flag::new(FALSE)
         }
@@ -98,7 +92,7 @@ cfg_if::cfg_if! {
                     return Poll::Ready(());
                 }
         
-                self.inner.queue.register(cx.waker());
+                self.inner.queue.register(cx.waker().clone());
                 Poll::Pending
             }
         }

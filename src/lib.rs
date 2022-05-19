@@ -49,4 +49,5 @@ cfg_if::cfg_if! {
 
 #[cfg(feature = "futures")]
 pub(crate) mod queue;
+pub(crate) mod utils;
 flat_mod!(movable, mutex);
